@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园反诈智能预警平台 - 选择版本</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #030712 0%, #0a1628 50%, #111827 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .glass {
+            background: rgba(10, 22, 40, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            text-shadow: 0 0 40px rgba(99, 102, 241, 0.3);
+        }
+        
+        .header p {
+            color: #94a3b8;
+            font-size: 1.1em;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 20px 60px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .versions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+            margin-top: 40px;
+        }
+        
+        .version-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(10, 22, 40, 0.6) 100%);
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            border-radius: 28px;
+            padding: 40px;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .version-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1, #06b6d4, #10b981);
+        }
+        
+        .version-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 30px 60px -15px rgba(99, 102, 241, 0.3), 0 0 60px rgba(99, 102, 241, 0.1);
+        }
+        
+        .version-card.full::before {
+            background: linear-gradient(90deg, #10b981, #06b6d4, #6366f1);
+        }
+        
+        .version-card.pro::before {
+            background: linear-gradient(90deg, #8b5cf6, #ec4899, #f59e0b);
+        }
+        
+        .version-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+        
+        .version-badge.full {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .version-badge.pro {
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .version-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .version-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #f8fafc;
+        }
+        
+        .version-desc {
+            color: #94a3b8;
+            line-height: 1.8;
+            margin-bottom: 24px;
+        }
+        
+        .features-list {
+            margin-bottom: 24px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            color: #cbd5e1;
+        }
+        
+        .feature-item svg {
+            width: 20px;
+            height: 20px;
+            color: #6366f1;
+            flex-shrink: 0;
+        }
+        
+        .version-btn {
+            width: 100%;
+            padding: 16px 32px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .version-btn.full {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .version-btn.pro {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+        
+        .version-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+        
+        .stats-section {
+            margin-top: 60px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 24px;
+        }
+        
+        .stat-num {
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #818cf8, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-label {
+            color: #94a3b8;
+            margin-top: 8px;
+            font-size: 0.9em;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+            font-size: 0.9em;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .float:nth-child(2) { animation-delay: 0.5s; }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .versions-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles-canvas"></canvas>
+    
+    <div class="header">
+        <h1>🛡️ 校园反诈智能预警与宣传教育一体化平台</h1>
+        <p>请选择您想使用的版本</p>
+    </div>
+    
+    <div class="main-container">
+        <div class="versions-grid">
+            <!-- 完整版 -->
+            <div class="version-card full float" onclick="openVersion('full')">
+                <div class="version-badge full">推荐</div>
+                <div class="version-icon">🏢</div>
+                <h2 class="version-title">完整版平台</h2>
+                <p class="version-desc">
+                    功能最全面的校园反诈综合管理平台，包含学生端、辅导员端、管理员端、受害者关怀端等全角色系统。
+                </p>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        四端合一（学生/导员/管理员/受害者）
+                    </div>
+                    <div class="feature-item">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        完整的学习和游戏化系统
+                    </div>
+                    <div class="feature-item">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        综合数据可视化大屏
+                    </div>
+                    <div class="feature-item">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        AI智能助手和风险预测
+                    </div>
+                </div>
+                <button class="version-btn full">
+                    进入完整版
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- 高级演示版 -->
+            <div class="version-card pro float" onclick="openVersion('pro')">
+                <div class="version-badge pro">炫酷</div>
+                <div class="version-icon">🚀</div>
+                <h2 class="version-title">PRO 高级演示版</h2>
+                <p class="version-desc">
+                    采用赛博朋克风格设计，电影级视觉体验，适合展示演示，包含高级交互效果和动态数据。
+                </p>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        赛博朋克视觉设计
+                    </div>
+                    <div class="feature-item">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        三层自定义光标系统
+                    </div>
+                    <div class="feature-item">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        3D卡片翻转效果
+                    </div>
+                    <div class="feature-item">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        CSV/Excel数据导入
+                    </div>
+                </div>
+                <button class="version-btn pro">
+                    进入 PRO 版
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 统计数据 -->
+        <div class="stats-section glass">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-num">4+</div>
+                    <div class="stat-label">用户角色</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">50+</div>
+                    <div class="stat-label">功能模块</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">24/7</div>
+                    <div class="stat-label">实时监测</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">AI</div>
+                    <div class="stat-label">智能驱动</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>© 2024 校园反诈智能预警系统 | 科技向善，守护青春</p>
+    </div>
+    
+    <script>
+        // 粒子背景
+        class ParticleNetwork {
+            constructor() {
+                this.canvas = document.getElementById('particles-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.particleCount = 60;
+                this.resize();
+                this.init();
+                this.animate();
+                window.addEventListener('resize', () => this.resize());
+            }
+            
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            
+            init() {
+                this.particles = [];
+                for(let i = 0; i < this.particleCount; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 0.6,
+                        vy: (Math.random() - 0.5) * 0.6,
+                        r: Math.random() * 2.5 + 1,
+                        color: `rgba(99, 102, 241, ${Math.random() * 0.4 + 0.2})`
+                    });
+                }
+            }
+            
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.particles.forEach((p, i) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if(p.x < 0 || p.x > this.canvas.width) p.vx *= -1;
+                    if(p.y < 0 || p.y > this.canvas.height) p.vy *= -1;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.fill();
+                    
+                    for(let j = i + 1; j < this.particles.length; j++) {
+                        let p2 = this.particles[j];
+                        let dx = p.x - p2.x;
+                        let dy = p.y - p2.y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+                        if(dist < 120) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(p.x, p.y);
+                            this.ctx.lineTo(p2.x, p2.y);
+                            this.ctx.strokeStyle = `rgba(99, 102, 241, ${0.15 * (1 - dist / 120)})`;
+                            this.ctx.lineWidth = 0.8;
+                            this.ctx.stroke();
+                        }
+                    }
+                });
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+        new ParticleNetwork();
+        
+        // 打开版本
+        function openVersion(version) {
+            if(version === 'full') {
+                window.location.href = './full-version/index.html';
+            } else {
+                window.location.href = './pro-version/index.html';
+            }
+        }
+    </script>
+</body>
+</html>
