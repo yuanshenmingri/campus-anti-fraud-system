@@ -1,0 +1,2217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园反诈智能预警系统 v3.0 ULTRA</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --bg-dark: #030712;
+            --bg-card: #0a1628;
+            --bg-card-hover: #111d35;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --glow-primary: rgba(99, 102, 241, 0.5);
+            --glow-success: rgba(16, 185, 129, 0.5);
+            --glow-danger: rgba(239, 68, 68, 0.5);
+            --glow-cyan: rgba(6, 182, 212, 0.5);
+        }
+        
+        body {
+            font-family: 'Rajdhani', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(transparent 50%, rgba(0, 255, 255, 0.03) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 1;
+            animation: scanlineMove 8s linear infinite;
+        }
+        
+        @keyframes scanlineMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+        
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 1;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        }
+        
+        .login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .login-container {
+            width: 480px;
+            padding: 60px;
+            background: rgba(10, 22, 40, 0.8);
+            backdrop-filter: blur(30px);
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            border-radius: 32px;
+            box-shadow: 
+                0 0 60px rgba(99, 102, 241, 0.3),
+                inset 0 0 60px rgba(99, 102, 241, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 0deg,
+                transparent,
+                rgba(99, 102, 241, 0.1),
+                transparent,
+                rgba(6, 182, 212, 0.1),
+                transparent
+            );
+            animation: rotateBorder 10s linear infinite;
+            z-index: -1;
+        }
+        
+        @keyframes rotateBorder {
+            100% { transform: rotate(360deg); }
+        }
+        
+        .login-logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo-container {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            position: relative;
+        }
+        
+        .logo-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spinRing 3s linear infinite;
+        }
+        
+        .logo-ring:nth-child(2) {
+            width: 110%;
+            height: 110%;
+            top: -5%;
+            left: -5%;
+            border-top-color: var(--info);
+            animation-duration: 4s;
+            animation-direction: reverse;
+        }
+        
+        .logo-ring:nth-child(3) {
+            width: 120%;
+            height: 120%;
+            top: -10%;
+            left: -10%;
+            border-top-color: var(--success);
+            animation-duration: 5s;
+        }
+        
+        @keyframes spinRing {
+            100% { transform: rotate(360deg); }
+        }
+        
+        .logo-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% { 
+                filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.5));
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% { 
+                filter: drop-shadow(0 0 30px rgba(99, 102, 241, 0.8));
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+        
+        .login-logo h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), var(--info));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            text-shadow: 0 0 30px var(--glow-primary);
+            letter-spacing: 3px;
+        }
+        
+        .glitch-text {
+            position: relative;
+            animation: glitchText 3s infinite;
+        }
+        
+        @keyframes glitchText {
+            0%, 90%, 100% { transform: translate(0); }
+            92% { transform: translate(-2px, 2px); }
+            94% { transform: translate(2px, -2px); }
+            96% { transform: translate(-2px, -2px); }
+            98% { transform: translate(2px, 2px); }
+        }
+        
+        .login-logo p {
+            color: var(--text-muted);
+            font-size: 0.85em;
+            letter-spacing: 4px;
+        }
+        
+        .login-form {
+            margin-top: 32px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+            color: var(--text-primary);
+            font-size: 1em;
+            font-family: 'Rajdhani', sans-serif;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 
+                0 0 30px rgba(99, 102, 241, 0.3),
+                inset 0 0 20px rgba(99, 102, 241, 0.1);
+            transform: scale(1.02);
+        }
+        
+        .form-group::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--info));
+            transition: all 0.4s;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        
+        .form-group:focus-within::after {
+            width: 100%;
+            box-shadow: 0 0 20px var(--glow-primary);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 18px 32px;
+            font-size: 1.1em;
+            font-weight: 600;
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 2px;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.6s;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 
+                0 20px 60px rgba(99, 102, 241, 0.5),
+                0 0 40px rgba(99, 102, 241, 0.3);
+        }
+        
+        .tech-badges {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 32px;
+        }
+        
+        .tech-badge {
+            padding: 8px 16px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            color: var(--primary-light);
+            font-size: 0.75em;
+            font-weight: 600;
+            letter-spacing: 1px;
+            animation: badgePulse 2s ease-in-out infinite;
+        }
+        
+        .tech-badge:nth-child(2) { animation-delay: 0.5s; }
+        .tech-badge:nth-child(3) { animation-delay: 1s; }
+        
+        @keyframes badgePulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        .dashboard-page {
+            display: none;
+            min-height: 100vh;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .header {
+            background: rgba(3, 7, 18, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4em;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-shadow: 0 0 20px var(--glow-primary);
+            letter-spacing: 2px;
+        }
+        
+        .header h1::before {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulseGlow 2s infinite;
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        .role-tabs {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .role-tab {
+            padding: 12px 28px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            border-radius: 14px;
+            color: var(--primary-light);
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 0.95em;
+            letter-spacing: 1px;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .role-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .role-tab:hover::before {
+            left: 100%;
+        }
+        
+        .role-tab:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+        
+        .role-tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 
+                0 0 40px var(--glow-primary),
+                0 10px 30px rgba(99, 102, 241, 0.4);
+            animation: tabGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes tabGlow {
+            0%, 100% { box-shadow: 0 0 40px var(--glow-primary); }
+            50% { box-shadow: 0 0 60px var(--glow-primary), 0 0 80px var(--glow-primary); }
+        }
+        
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 80px);
+            padding-top: 80px;
+        }
+        
+        .sidebar {
+            width: 320px;
+            background: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(99, 102, 241, 0.1);
+            padding: 24px;
+            overflow-y: auto;
+            position: fixed;
+            top: 80px;
+            left: 0;
+            bottom: 0;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 28px;
+        }
+        
+        .sidebar-title {
+            color: var(--text-muted);
+            font-size: 0.7em;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+            font-family: 'Orbitron', sans-serif;
+            position: relative;
+            padding-left: 12px;
+        }
+        
+        .sidebar-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary), var(--info));
+        }
+        
+        .ai-panel {
+            background: rgba(10, 22, 40, 0.6);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ai-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--info), var(--success));
+        }
+        
+        .health-ring {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 20px;
+        }
+        
+        .ring-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        
+        .ring-bg {
+            fill: none;
+            stroke: rgba(99, 102, 241, 0.15);
+            stroke-width: 8;
+        }
+        
+        .ring-progress {
+            fill: none;
+            stroke: url(#ringGradient);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 377;
+            stroke-dashoffset: 23;
+            animation: ringFill 2s ease-out forwards;
+            filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.5));
+        }
+        
+        @keyframes ringFill {
+            from { stroke-dashoffset: 377; }
+            to { stroke-dashoffset: 23; }
+        }
+        
+        .ring-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .ring-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--primary-light);
+            text-shadow: 0 0 20px var(--glow-primary);
+        }
+        
+        .ring-label {
+            color: var(--text-muted);
+            font-size: 0.8em;
+            margin-top: 4px;
+        }
+        
+        .mini-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .mini-stat {
+            text-align: center;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .mini-stat:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.2);
+        }
+        
+        .mini-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+        
+        .mini-label {
+            color: var(--text-muted);
+            font-size: 0.7em;
+            margin-top: 4px;
+        }
+        
+        .data-stream {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 16px;
+            padding: 16px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: var(--success);
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: livePulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 5px var(--success); }
+            50% { opacity: 0.5; box-shadow: 0 0 15px var(--success); }
+        }
+        
+        .stream-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(99, 102, 241, 0.05);
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            animation: slideInLeft 0.4s ease-out;
+            transition: all 0.3s;
+        }
+        
+        .stream-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateX(4px);
+        }
+        
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .main {
+            flex: 1;
+            margin-left: 320px;
+            padding: 32px;
+            position: relative;
+        }
+        
+        .page-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2em;
+            color: var(--text-primary);
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid rgba(99, 102, 241, 0.2);
+            letter-spacing: 3px;
+            position: relative;
+        }
+        
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 120px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes titleGlow {
+            0%, 100% { width: 120px; }
+            50% { width: 200px; }
+        }
+        
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .module-card {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        
+        .module-card-inner {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        
+        .module-card:hover .module-card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .module-front,
+        .module-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .module-front {
+            background: rgba(10, 22, 40, 0.8);
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .module-card:hover .module-front {
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+            border-color: var(--primary);
+        }
+        
+        .module-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+        
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        .module-front h3 {
+            color: var(--text-primary);
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        
+        .module-front p {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+        
+        .module-back {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            transform: rotateY(180deg);
+            color: white;
+        }
+        
+        .module-back p {
+            line-height: 1.8;
+            font-size: 0.95em;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.02));
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            border-radius: 24px;
+            padding: 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+            animation: floatCard 6s ease-in-out infinite;
+        }
+        
+        .stat-card:nth-child(1) { animation-delay: 0s; }
+        .stat-card:nth-child(2) { animation-delay: 1s; }
+        .stat-card:nth-child(3) { animation-delay: 2s; }
+        .stat-card:nth-child(4) { animation-delay: 3s; }
+        
+        @keyframes floatCard {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--info), var(--success));
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 
+                0 20px 50px rgba(99, 102, 241, 0.3),
+                0 0 40px rgba(99, 102, 241, 0.1);
+        }
+        
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), var(--info));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            text-shadow: 0 0 30px var(--glow-primary);
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+            letter-spacing: 1px;
+        }
+        
+        .stat-trend {
+            margin-top: 12px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .stat-trend.up {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        
+        .stat-trend.down {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        .chart-section {
+            background: rgba(10, 22, 40, 0.6);
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .chart-header h3 {
+            color: var(--text-primary);
+            font-size: 1.3em;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .chart-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-sm {
+            padding: 10px 20px;
+            font-size: 0.9em;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            color: var(--primary-light);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-sm:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .btn-sm.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
+        }
+        
+        #main-chart {
+            width: 100%;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+        }
+        
+        .sidebar-right {
+            width: 320px;
+            background: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(99, 102, 241, 0.1);
+            padding: 24px;
+            position: fixed;
+            top: 80px;
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+        }
+        
+        .radar-container {
+            position: relative;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .alert-level {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--danger);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .alert-level:hover {
+            transform: translateX(4px);
+            background: rgba(239, 68, 68, 0.15);
+        }
+        
+        .alert-level.high {
+            border-left-color: var(--warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .alert-level.medium {
+            border-left-color: var(--info);
+            background: rgba(6, 182, 212, 0.1);
+        }
+        
+        .alert-level.low {
+            border-left-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .level-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--danger);
+            animation: levelPulse 1s ease-in-out infinite;
+        }
+        
+        .alert-level.high .level-dot {
+            background: var(--warning);
+        }
+        
+        .alert-level.medium .level-dot {
+            background: var(--info);
+        }
+        
+        .alert-level.low .level-dot {
+            background: var(--success);
+        }
+        
+        @keyframes levelPulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 5px currentColor; }
+            50% { opacity: 0.6; box-shadow: 0 0 15px currentColor; }
+        }
+        
+        .level-label {
+            color: var(--text-secondary);
+            flex: 1;
+            text-align: left;
+            margin-left: 12px;
+        }
+        
+        .level-count {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .coverage-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .coverage-cell {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .coverage-cell.full {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.1));
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+        
+        .coverage-cell.partial {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(245, 158, 11, 0.1));
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+        
+        .coverage-cell:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+        }
+        
+        .coverage-legend {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            justify-content: center;
+        }
+        
+        .legend-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+            margin-right: 6px;
+        }
+        
+        .legend-dot.full {
+            background: var(--success);
+        }
+        
+        .legend-dot.partial {
+            background: var(--warning);
+        }
+        
+        .status-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .status-item:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateX(4px);
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status-dot.online {
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+            animation: livePulse 1s infinite;
+        }
+        
+        .status-dot.warning {
+            background: var(--warning);
+            box-shadow: 0 0 10px var(--warning);
+        }
+        
+        .status-label {
+            color: var(--text-secondary);
+            flex: 1;
+            font-size: 0.9em;
+        }
+        
+        .status-latency {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85em;
+            color: var(--text-muted);
+        }
+        
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        
+        .fab-main {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.5);
+            transition: all 0.4s;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .fab-main:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 15px 50px rgba(99, 102, 241, 0.6);
+        }
+        
+        .fab-menu {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.4s;
+        }
+        
+        .fab-container.active .fab-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .fab-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            background: rgba(10, 22, 40, 0.95);
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            color: var(--text-primary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+            backdrop-filter: blur(20px);
+        }
+        
+        .fab-item:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+            transform: translateX(-8px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .modal {
+            background: linear-gradient(135deg, rgba(10, 22, 40, 0.95), rgba(15, 32, 60, 0.95));
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            border-radius: 24px;
+            padding: 36px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+            box-shadow: 
+                0 30px 80px rgba(0, 0, 0, 0.5),
+                0 0 60px rgba(99, 102, 241, 0.2);
+        }
+        
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-header h3 {
+            color: var(--text-primary);
+            font-size: 1.5em;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+        
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--danger);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+            transform: rotate(90deg);
+        }
+        
+        .upload-area {
+            border: 3px dashed rgba(99, 102, 241, 0.4);
+            border-radius: 20px;
+            padding: 48px;
+            text-align: center;
+            background: rgba(99, 102, 241, 0.05);
+            transition: all 0.4s;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
+        }
+        
+        .upload-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .cloud {
+            animation: cloudFloat 3s ease-in-out infinite;
+        }
+        
+        @keyframes cloudFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .arrows {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: arrowBounce 1s ease-in-out infinite;
+        }
+        
+        @keyframes arrowBounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-8px); }
+        }
+        
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .toggle-switch:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .toggle-switch input {
+            display: none;
+        }
+        
+        .toggle-slider {
+            width: 50px;
+            height: 26px;
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 13px;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .toggle-slider::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--primary);
+        }
+        
+        .toggle-switch input:checked + .toggle-slider::after {
+            transform: translateX(24px);
+        }
+        
+        .notification-panel {
+            position: fixed;
+            top: 80px;
+            right: -400px;
+            width: 380px;
+            max-height: calc(100vh - 100px);
+            background: rgba(10, 22, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            z-index: 1001;
+            transition: right 0.4s;
+            overflow: hidden;
+        }
+        
+        .notification-panel.active {
+            right: 20px;
+        }
+        
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        .notification-header h3 {
+            color: var(--text-primary);
+            font-size: 1.1em;
+        }
+        
+        .notification-header button {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        
+        .notification-header button:hover {
+            text-decoration: underline;
+        }
+        
+        #notification-list {
+            padding: 16px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 14px;
+            margin-bottom: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border-left: 4px solid var(--success);
+            animation: slideInRight 0.4s ease-out;
+            transition: all 0.3s;
+        }
+        
+        .notification-item:hover {
+            transform: translateX(-4px);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .notification-item.error {
+            border-left-color: var(--danger);
+        }
+        
+        .notification-item.warning {
+            border-left-color: var(--warning);
+        }
+        
+        .notification-item.info {
+            border-left-color: var(--info);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            flex-direction: column;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 6px solid rgba(99, 102, 241, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .cursor-outer {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.15s ease-out, opacity 0.3s;
+            mix-blend-mode: difference;
+        }
+        
+        .cursor-inner {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.08s ease-out;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        @media (max-width: 1400px) {
+            .modules-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                top: 0;
+            }
+            .sidebar-right {
+                width: 100%;
+                position: relative;
+                top: 0;
+            }
+            .main {
+                margin-left: 0;
+            }
+            .layout {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles-canvas"></canvas>
+    <div class="scanline"></div>
+    <div class="grid-overlay"></div>
+    
+    <!-- 登录页面 -->
+    <div id="login-page" class="page active">
+        <div class="login-page">
+            <div class="login-container">
+                <div class="login-logo">
+                    <div class="logo-container">
+                        <div class="logo-ring"></div>
+                        <div class="logo-ring"></div>
+                        <div class="logo-ring"></div>
+                        <div class="logo-icon">🛡️</div>
+                    </div>
+                    <h1 class="glitch-text">校园反诈智能预警系统</h1>
+                    <p>CAMPUS ANTI-FRAUD EARLY WARNING SYSTEM</p>
+                </div>
+                
+                <div class="login-form">
+                    <div class="form-group">
+                        <label>用户名</label>
+                        <input type="text" id="login-username" placeholder="请输入用户名">
+                    </div>
+                    <div class="form-group">
+                        <label>密码</label>
+                        <input type="password" id="login-password" placeholder="请输入密码">
+                    </div>
+                    <div class="form-group">
+                        <label>角色</label>
+                        <select id="login-role">
+                            <option value="admin">系统管理员</option>
+                            <option value="teacher">教师/工作人员</option>
+                            <option value="student">学生用户</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="handleLogin()">
+                        <span>🚀 初始化系统访问</span>
+                    </button>
+                </div>
+                
+                <div class="tech-badges">
+                    <span class="tech-badge">⚡ AI-POWERED</span>
+                    <span class="tech-badge">🔄 REAL-TIME</span>
+                    <span class="tech-badge">🎯 ADVANCED</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 主界面 -->
+    <div id="dashboard-page" class="page">
+        <!-- 顶部导航栏 -->
+        <div class="header">
+            <div class="header-left">
+                <h1>🛡️ 校园反诈智能预警系统 v3.0</h1>
+            </div>
+            <div class="header-center">
+                <div class="role-tabs">
+                    <button class="role-tab active" onclick="switchRole('admin')">
+                        <span>👑 管理员</span>
+                    </button>
+                    <button class="role-tab" onclick="switchRole('teacher')">
+                        <span>👨‍🏫 教师</span>
+                    </button>
+                    <button class="role-tab" onclick="switchRole('student')">
+                        <span>👨‍🎓 学生</span>
+                    </button>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="header-time" id="current-time"></div>
+                <div class="user-dropdown" onclick="toggleUserMenu()">
+                    <div class="avatar">
+                        <span id="user-avatar-icon">👤</span>
+                    </div>
+                    <span class="user-name" id="user-name-display">管理员</span>
+                    <div class="user-menu" id="user-menu">
+                        <div class="menu-item" onclick="logout()">🚪 退出系统</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="layout">
+            <!-- 左侧边栏 -->
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">🤖 AI核心状态监控</div>
+                    <div class="ai-panel">
+                        <div class="health-ring">
+                            <svg viewBox="0 0 100 100" class="ring-svg">
+                                <defs>
+                                    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#6366f1"/>
+                                        <stop offset="50%" stop-color="#06b6d4"/>
+                                        <stop offset="100%" stop-color="#10b981"/>
+                                    </linearGradient>
+                                </defs>
+                                <circle class="ring-bg" cx="50" cy="50" r="45"/>
+                                <circle class="ring-progress" cx="50" cy="50" r="45"/>
+                            </svg>
+                            <div class="ring-center">
+                                <div class="ring-value">94.2%</div>
+                                <div class="ring-label">识别准确率</div>
+                            </div>
+                        </div>
+                        <div class="mini-stats">
+                            <div class="mini-stat">
+                                <div class="mini-value" style="color:#06b6d4;">97.8%</div>
+                                <div class="mini-label">预警覆盖率</div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-value" style="color:#10b981;">0.8s</div>
+                                <div class="mini-label">平均响应</div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-value" style="color:#a78bfa;">68%</div>
+                                <div class="mini-label">样本处理</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">⚡ 实时数据流</div>
+                    <div class="data-stream">
+                        <div class="live-indicator">
+                            <span class="live-dot"></span>
+                            <span>实时更新中</span>
+                        </div>
+                        <div id="data-stream-list"></div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">💚 系统健康度</div>
+                    <div class="ai-panel">
+                        <div class="health-score">
+                            <span>85%</span>
+                            <p>运行良好</p>
+                        </div>
+                        <div class="mini-stats">
+                            <div class="mini-stat">
+                                <div class="mini-value" style="color:#06b6d4;">42%</div>
+                                <div class="mini-label">CPU</div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-value" style="color:#a78bfa;">61%</div>
+                                <div class="mini-label">内存</div>
+                            </div>
+                            <div class="mini-stat">
+                                <div class="mini-value" style="color:#10b981;">73%</div>
+                                <div class="mini-label">网络</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 中间内容区 -->
+            <div class="main">
+                <!-- 核心功能模块 -->
+                <div class="page-section">
+                    <h2 class="page-title">🎯 核心功能模块矩阵</h2>
+                    <div class="modules-grid">
+                        <div class="module-card" onclick="activateModule('ai')">
+                            <div class="module-card-inner">
+                                <div class="module-front">
+                                    <div class="module-icon">🧠</div>
+                                    <h3>AI智能识别</h3>
+                                    <p>深度学习引擎</p>
+                                </div>
+                                <div class="module-back">
+                                    <p>神经网络 V3.2<br/>训练数据量: 1000万+<br/>识别类型: 12种</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="module-card" onclick="activateModule('warning')">
+                            <div class="module-card-inner">
+                                <div class="module-front">
+                                    <div class="module-icon">⚡</div>
+                                    <h3>实时预警系统</h3>
+                                    <p>检测与告警</p>
+                                </div>
+                                <div class="module-back">
+                                    <p>监控节点: 156个<br/>告警级别: 4级<br/>响应时间: 1秒</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="module-card" onclick="activateModule('education')">
+                            <div class="module-card-inner">
+                                <div class="module-front">
+                                    <div class="module-icon">📚</div>
+                                    <h3>宣传教育中心</h3>
+                                    <p>培训平台</p>
+                                </div>
+                                <div class="module-back">
+                                    <p>互动课程: 48门<br/>游戏化学习<br/>智能学习路径</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="module-card" onclick="activateModule('analysis')">
+                            <div class="module-card-inner">
+                                <div class="module-front">
+                                    <div class="module-icon">🔬</div>
+                                    <h3>数据分析平台</h3>
+                                    <p>分析引擎</p>
+                                </div>
+                                <div class="module-back">
+                                    <p>预测模型: 12个<br/>数据维度: 20+<br/>可视化图表</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 核心统计 -->
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-cases">86,542</div>
+                        <div class="stat-label">累计处理案件总数</div>
+                        <div class="stat-trend up">↑ +11.5% 较上周</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-warnings">23,891</div>
+                        <div class="stat-label">今日预警次数</div>
+                        <div class="stat-trend down">↓ -6.3% 较昨日</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-accuracy">94.2%</div>
+                        <div class="stat-label">预警准确率</div>
+                        <div class="stat-trend up">↑ +2.7% 性能提升</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-users">156</div>
+                        <div class="stat-label">活跃监控节点</div>
+                        <div class="stat-trend up">↑ +8 在线</div>
+                    </div>
+                </div>
+                
+                <!-- 图表区域 -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h3>📊 高级数据分析仪表板</h3>
+                        <div class="chart-buttons">
+                            <button class="btn-sm active">本周</button>
+                            <button class="btn-sm">本月</button>
+                            <button class="btn-sm">本年</button>
+                        </div>
+                    </div>
+                    <div id="main-chart"></div>
+                </div>
+            </div>
+            
+            <!-- 右侧边栏 -->
+            <div class="sidebar-right">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">🚨 威胁态势雷达</div>
+                    <div class="radar-container">
+                        <div class="alert-level">
+                            <span class="level-dot"></span>
+                            <span class="level-label">紧急</span>
+                            <span class="level-count">8</span>
+                        </div>
+                        <div class="alert-level high">
+                            <span class="level-dot"></span>
+                            <span class="level-label">高危</span>
+                            <span class="level-count">12</span>
+                        </div>
+                        <div class="alert-level medium">
+                            <span class="level-dot"></span>
+                            <span class="level-label">中危</span>
+                            <span class="level-count">25</span>
+                        </div>
+                        <div class="alert-level low">
+                            <span class="level-dot"></span>
+                            <span class="level-label">低危</span>
+                            <span class="level-count">42</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">📋 实时预警动态</div>
+                    <div id="alert-list"></div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">🗺️ 覆盖区域地图</div>
+                    <div class="coverage-grid">
+                        <div class="coverage-cell full"></div>
+                        <div class="coverage-cell full"></div>
+                        <div class="coverage-cell partial"></div>
+                        <div class="coverage-cell full"></div>
+                        <div class="coverage-cell partial"></div>
+                        <div class="coverage-cell full"></div>
+                        <div class="coverage-cell full"></div>
+                        <div class="coverage-cell partial"></div>
+                        <div class="coverage-cell full"></div>
+                        <div class="coverage-cell full"></div>
+                        <div class="coverage-cell partial"></div>
+                        <div class="coverage-cell full"></div>
+                        <div class="coverage-cell partial"></div>
+                        <div class="coverage-cell full"></div>
+                        <div class="coverage-cell full"></div>
+                        <div class="coverage-cell partial"></div>
+                    </div>
+                    <div class="coverage-legend">
+                        <span><span class="legend-dot full"></span>完全覆盖</span>
+                        <span><span class="legend-dot partial"></span>部分覆盖</span>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="sidebar-title">💻 系统运行状态</div>
+                    <div class="status-list">
+                        <div class="status-item">
+                            <span class="status-dot online"></span>
+                            <span class="status-label">数据库服务</span>
+                            <span class="status-latency">12ms</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-dot online"></span>
+                            <span class="status-label">AI识别引擎</span>
+                            <span class="status-latency">8ms</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-dot warning"></span>
+                            <span class="status-label">缓存服务器</span>
+                            <span class="status-latency">22ms</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-dot online"></span>
+                            <span class="status-label">消息推送</span>
+                            <span class="status-latency">5ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 浮动按钮 -->
+    <div class="fab-container" id="fab-container">
+        <div class="fab-menu">
+            <button class="fab-item" onclick="openImportModal()">
+                <span>📥</span>
+                <span>导入数据</span>
+            </button>
+            <button class="fab-item" onclick="exportData()">
+                <span>📤</span>
+                <span>导出报表</span>
+            </button>
+            <button class="fab-item" onclick="showNotification('帮助文档加载中...', 'info')">
+                <span>❓</span>
+                <span>使用帮助</span>
+            </button>
+        </div>
+        <button class="fab-main" onclick="toggleFAB()">
+            <span>+</span>
+        </button>
+    </div>
+    
+    <!-- 通知中心 -->
+    <div class="notification-panel" id="notification-panel">
+        <div class="notification-header">
+            <h3>🔔 消息通知</h3>
+            <button onclick="clearAllNotifications()">清空全部</button>
+        </div>
+        <div id="notification-list"></div>
+    </div>
+    
+    <!-- 数据导入弹窗 -->
+    <div class="modal-overlay" id="import-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📥 数据导入中心</h3>
+                <button class="modal-close" onclick="closeImportModal()">×</button>
+            </div>
+            <div class="upload-area" id="upload-area">
+                <div class="upload-icon">
+                    <span class="cloud">☁️</span>
+                    <span class="arrows">⬆️</span>
+                </div>
+                <p style="color:var(--text-primary);margin-bottom:8px;">拖拽文件到此处上传</p>
+                <p class="subtext">支持 CSV、Excel、JSON 格式</p>
+                <input type="file" id="file-input" accept=".csv,.xlsx,.xls,.json" style="display:none;" onchange="handleFileSelect(event)">
+                <button class="btn btn-primary" style="margin-top:20px;width:auto;" onclick="document.getElementById('file-input').click()">
+                    选择文件
+                </button>
+            </div>
+            <div style="margin-top:24px;">
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="toggle-slider"></span>
+                    <span>启用实时数据同步</span>
+                </label>
+                <label class="toggle-switch">
+                    <input type="checkbox">
+                    <span class="toggle-slider"></span>
+                    <span>清除现有数据</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p style="color:var(--text-primary);font-size:1.2em;">🚀 正在处理数据...</p>
+    </div>
+    
+    <!-- 自定义光标 -->
+    <div class="cursor-outer" id="cursor-outer"></div>
+    <div class="cursor-inner" id="cursor-inner"></div>
+    
+    <!-- 第三方库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="app-pro.js"></script>
+    
+    <script>
+        // 粒子系统
+        class ParticleNetwork {
+            constructor() {
+                this.canvas = document.getElementById('particles-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.particleCount = 100;
+                this.mouse = { x: null, y: null, radius: 150 };
+                this.resize();
+                this.init();
+                this.animate();
+                window.addEventListener('resize', () => this.resize());
+                document.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                    this.updateCursor(e);
+                });
+            }
+            
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            
+            init() {
+                this.particles = [];
+                const colors = [
+                    'rgba(99, 102, 241, 0.6)',
+                    'rgba(6, 182, 212, 0.6)',
+                    'rgba(16, 185, 129, 0.6)',
+                    'rgba(139, 92, 246, 0.6)'
+                ];
+                for (let i = 0; i < this.particleCount; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        r: Math.random() * 3 + 1,
+                        color: colors[Math.floor(Math.random() * colors.length)]
+                    });
+                }
+            }
+            
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.particles.forEach((p, i) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < 0 || p.x > this.canvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > this.canvas.height) p.vy *= -1;
+                    
+                    if (this.mouse.x) {
+                        const dx = this.mouse.x - p.x;
+                        const dy = this.mouse.y - p.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < this.mouse.radius) {
+                            const force = (this.mouse.radius - dist) / this.mouse.radius;
+                            p.x -= dx * force * 0.02;
+                            p.y -= dy * force * 0.02;
+                        }
+                    }
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.fill();
+                    
+                    for (let j = i + 1; j < this.particles.length; j++) {
+                        const p2 = this.particles[j];
+                        const dx = p.x - p2.x;
+                        const dy = p.y - p2.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 120) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(p.x, p.y);
+                            this.ctx.lineTo(p2.x, p2.y);
+                            this.ctx.strokeStyle = `rgba(99, 102, 241, ${0.15 * (1 - dist / 120)})`;
+                            this.ctx.lineWidth = 0.8;
+                            this.ctx.stroke();
+                        }
+                    }
+                });
+                requestAnimationFrame(() => this.animate());
+            }
+            
+            updateCursor(e) {
+                const outer = document.getElementById('cursor-outer');
+                const inner = document.getElementById('cursor-inner');
+                outer.style.left = e.clientX - 20 + 'px';
+                outer.style.top = e.clientY - 20 + 'px';
+                inner.style.left = e.clientX - 4 + 'px';
+                inner.style.top = e.clientY - 4 + 'px';
+            }
+        }
+        
+        let particleNet;
+        document.addEventListener('DOMContentLoaded', () => {
+            particleNet = new ParticleNetwork();
+        });
+        
+        // 登录处理
+        function handleLogin() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const role = document.getElementById('login-role').value;
+            
+            if (!username || username.length < 3) {
+                showNotification('用户名至少需要3个字符', 'error');
+                return;
+            }
+            if (!password || password.length < 6) {
+                showNotification('密码至少需要6位', 'error');
+                return;
+            }
+            
+            document.getElementById('login-page').classList.remove('active');
+            document.getElementById('dashboard-page').classList.add('active');
+            document.getElementById('user-name-display').textContent = username;
+            
+            showNotification(`欢迎回来，${username}！系统已准备就绪。`, 'success');
+            initDashboard();
+        }
+        
+        function initDashboard() {
+            setTimeout(() => {
+                if (typeof initializeCharts === 'function') initializeCharts();
+                if (typeof initDataStream === 'function') initDataStream();
+                if (typeof initAlertList === 'function') initAlertList();
+                if (typeof startRealtimeUpdates === 'function') startRealtimeUpdates();
+            }, 500);
+        }
+        
+        function switchRole(role) {
+            document.querySelectorAll('.role-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.closest('.role-tab').classList.add('active');
+            showNotification(`已切换到${role === 'admin' ? '管理员' : role === 'teacher' ? '教师' : '学生'}模式`, 'info');
+        }
+        
+        function toggleUserMenu() {
+            const menu = document.getElementById('user-menu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        function logout() {
+            if (confirm('确定要退出系统吗？')) {
+                document.getElementById('dashboard-page').classList.remove('active');
+                document.getElementById('login-page').classList.add('active');
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+                showNotification('已安全退出系统', 'info');
+            }
+        }
+        
+        function activateModule(module) {
+            const names = {
+                ai: 'AI智能识别引擎',
+                warning: '实时预警系统',
+                education: '宣传教育中心',
+                analysis: '数据分析平台'
+            };
+            showNotification(`✅ 模块已激活: ${names[module]}`, 'success');
+        }
+        
+        function toggleFAB() {
+            const fab = document.getElementById('fab-container');
+            fab.classList.toggle('active');
+        }
+        
+        function openImportModal() {
+            document.getElementById('import-modal').classList.add('active');
+            toggleFAB();
+        }
+        
+        function closeImportModal() {
+            document.getElementById('import-modal').classList.remove('active');
+        }
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                showNotification(`已选择文件: ${file.name}`, 'info');
+            }
+        }
+        
+        function exportData() {
+            showNotification('📤 正在生成综合报表...', 'info');
+            setTimeout(() => {
+                showNotification('✅ 报表已成功导出！', 'success');
+            }, 1500);
+            toggleFAB();
+        }
+        
+        function showNotification(message, type = 'info') {
+            const panel = document.getElementById('notification-panel');
+            const list = document.getElementById('notification-list');
+            const item = document.createElement('div');
+            item.className = `notification-item ${type}`;
+            item.textContent = message;
+            list.insertBefore(item, list.firstChild);
+            panel.classList.add('active');
+            
+            setTimeout(() => {
+                panel.classList.remove('active');
+            }, 5000);
+        }
+        
+        function clearAllNotifications() {
+            document.getElementById('notification-list').innerHTML = '';
+            showNotification('通知已清空', 'info');
+        }
+        
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const timeEl = document.getElementById('current-time');
+            if (timeEl) timeEl.textContent = timeStr;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeImportModal();
+                document.getElementById('user-menu').style.display = 'none';
+            }
+            if (e.ctrlKey && e.key === 'i') {
+                e.preventDefault();
+                openImportModal();
+            }
+            if (e.key === 'F11') {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
